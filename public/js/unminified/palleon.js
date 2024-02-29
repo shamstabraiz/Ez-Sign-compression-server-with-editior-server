@@ -670,7 +670,6 @@
             if (canvas.backgroundImage) {
                 filters = canvas.backgroundImage.filters;
             }
-
             // Temp Canvas
             if (mode == "canvas") {
                 selector.find("#palleon-canvas-color").trigger("change");
@@ -736,7 +735,6 @@
                 });
                 adjustZoom();
                 modeCheck();
-
                 setTimeout(function () {
                     reset();
                     addToHistory(
@@ -1068,23 +1066,37 @@
 
         /* Adjust Mode */
         function modeCheck() {
-            // if (mode == 'none') {
-            //     selector.find('#palleon-icon-menu, #palleon-icon-panel, #palleon-ruler-icon').css('pointer-events', 'none');
-            //     selector.find('.palleon-keep, #modal-add-new .palleon-modal-close').hide();
-            //     selector.find('#modal-add-new').show();
-            //     selector.find('#palleon-save').prop('disabled', true);
-            // } else {
-            //     selector.find('#palleon-canvas-wrap, .palleon-content-bar').css('visibility', 'visible');
-            //     selector.find('#palleon-icon-menu, #palleon-icon-panel, #palleon-ruler-icon').css('pointer-events', 'auto');
-            //     selector.find('.palleon-keep, #modal-add-new .palleon-modal-close').show();
-            //     selector.find('#modal-add-new').hide();
-            //     selector.find('#palleon-save').prop('disabled', false);
-            // }
-            // if (mode == 'canvas') {
-            //     selector.find('.hide-on-canvas-mode').hide();
-            // } else {
-            //     selector.find('.hide-on-canvas-mode').show();
-            // }
+            if (mode == "none") {
+                selector
+                    .find(
+                        "#palleon-icon-menu, #palleon-icon-panel, #palleon-ruler-icon"
+                    )
+                    .css("pointer-events", "none");
+                selector
+                    .find(".palleon-keep, #modal-add-new .palleon-modal-close")
+                    .hide();
+                selector.find("#modal-add-new").show();
+                selector.find("#palleon-save").prop("disabled", true);
+            } else {
+                selector
+                    .find("#palleon-canvas-wrap, .palleon-content-bar")
+                    .css("visibility", "visible");
+                selector
+                    .find(
+                        "#palleon-icon-menu, #palleon-icon-panel, #palleon-ruler-icon"
+                    )
+                    .css("pointer-events", "auto");
+                selector
+                    .find(".palleon-keep, #modal-add-new .palleon-modal-close")
+                    .show();
+                selector.find("#modal-add-new").hide();
+                selector.find("#palleon-save").prop("disabled", false);
+            }
+            if (mode == "canvas") {
+                selector.find(".hide-on-canvas-mode").hide();
+            } else {
+                selector.find(".hide-on-canvas-mode").show();
+            }
         }
 
         /* MODAL */
@@ -1627,8 +1639,11 @@
                 "crossOrigin",
                 "layerName",
             ]);
+            let json2;
+
             convertToDataURL(json.backgroundImage.src, function (dataUrl) {
                 json.backgroundImage.src = dataUrl;
+                json2 = JSON.stringify(json);
             });
             if (rotate == 0 || rotate == 180 || rotate == -180) {
                 zoomWidth = originalWidth;
@@ -1638,111 +1653,26 @@
             canvas.setHeight(zoomHeight);
 
             var blob = "";
-
-            if (format == "svg") {
-                var svgData = canvas.toSVG({
-                    suppressPreamble: false,
-                    width: originalWidth,
-                    height: originalHeight,
-                });
-                var texts = canvas
-                    .getObjects()
-                    .filter((element) => element.objectType == "textbox");
-                var def = '<defs><style type="text/css"><![CDATA[';
-                var fonts = [];
-                var objurl = "";
-                $.each(texts, function (index, value) {
-                    var font = value.fontFamily;
-                    var loadFonts = "yes";
-                    for (var i = 0; i < webSafeFonts.length; i++) {
-                        if (webSafeFonts[i][1] == font) {
-                            loadFonts = "no";
-                            break;
-                        }
-                    }
-                    if (loadFonts == "yes") {
-                        if (!fonts.includes(font)) {
-                            fonts.push(font);
-                        }
-                    }
-                });
-
-                if (fonts.length > 0) {
-                    $.each(fonts, function (index, value) {
-                        var isLastElement = index == fonts.length - 1;
-                        var slug = value.replace(/ /g, "+");
-                        $.ajax({
-                            url:
-                                "https://fonts.googleapis.com/css?family=" +
-                                slug +
-                                ":italic,regular,bold",
-                            type: "GET",
-                            dataType: "text",
-                            crossDomain: true,
-                            success: function (cssText) {
-                                def = def + cssText;
-                                setTimeout(function () {
-                                    if (isLastElement) {
-                                        svgData = svgData.replace(
-                                            "<defs>",
-                                            def + "]]></style>"
-                                        );
-                                        blob = new Blob([svgData], {
-                                            type: "image/svg+xml;charset=utf-8",
-                                        });
-                                        objurl = URL.createObjectURL(blob);
-                                        link.download = name + "." + format;
-                                        link.href = objurl;
-                                        link.click();
-                                    }
-                                }, 500);
-                            },
-                            error: function (jqXHR, error, errorThrown) {
-                                if (jqXHR.status && jqXHR.status == 400) {
-                                    toastr.error(
-                                        jqXHR.responseText,
-                                        palleonParams.error
-                                    );
-                                } else {
-                                    toastr.error(
-                                        palleonParams.wrong,
-                                        palleonParams.error
-                                    );
-                                }
-                            },
-                        });
-                    });
-                } else {
-                    blob = new Blob([svgData], {
-                        type: "image/svg+xml;charset=utf-8",
-                    });
-                    objurl = URL.createObjectURL(blob);
-                    link.download = name + "." + format;
-                    link.href = objurl;
-                    link.click();
-                }
-            } else {
-                var imgData = canvas.toDataURL({
-                    format: format,
-                    quality: quality,
-                    enableRetinaScaling: false,
-                });
-                if (format != "webp") {
-                    imgData = changeDpiDataUrl(
-                        imgData,
-                        selector.find("#palleon-download-img-dpi").val()
-                    );
-                }
-                // blob = dataURLtoBlob(imgData);
-                sendImageToServer(imgData, json);
-                // objurl = URL.createObjectURL(blob);
-                // link.download = name + "." + format;
-                // link.href = objurl;
-                // link.click();
+            var imgData = canvas.toDataURL({
+                format: format,
+                quality: quality,
+                enableRetinaScaling: false,
+            });
+            if (format != "webp") {
+                imgData = changeDpiDataUrl(
+                    imgData,
+                    selector.find("#palleon-download-img-dpi").val()
+                );
             }
+            blob = dataURLtoBlob(imgData);
+            sendImageToServer(blob, json);
+            // objurl = URL.createObjectURL(blob);
+            // link.download = name + "." + format;
+            // link.href = objurl;
+            // link.click();
             remove_watermark();
             adjustZoom();
-            // canvas.requestRenderAll();
+            canvas.requestRenderAll();
             selector.find(".palleon-modal").hide();
         });
 
@@ -2099,8 +2029,10 @@
 
         /* Save Image */
         selector.find("#palleon-save-img").on("click", function () {
-            var quality = parseFloat(100);
-            var format = "png";
+            var quality = parseFloat(
+                selector.find("#palleon-save-img-quality").val()
+            );
+            var format = selector.find("#palleon-save-img-format").val();
             var imgData = "";
             add_watermark();
             canvas.setZoom(1);
@@ -7234,11 +7166,14 @@
         if (id === "") {
             toastr.error("Error!", "No id found");
         }
+
         async function fetchData(id) {
             try {
-                let response = await fetch("/data/templetes/" + id + ".json");
+                let response = await fetch(
+                    "/data/templetes/" + id + ".json"
+                );
                 if (response.status === 404) {
-                    response = await fetch("/data/blank.json");
+                    return null;
                 }
                 return await response.json();
             } catch (error) {
@@ -7249,10 +7184,23 @@
         async function loadData(id) {
             try {
                 const dataJsonData = await fetchData(id);
-                setFileName(new Date().getTime(), "");
-                init("canvas");
-                console.log(dataJsonData);
-                loadJSON(dataJsonData);
+                if (dataJsonData == null) return;
+                console.log(dataJsonData)
+                selector
+                    .find("#palleon-canvas-wrap, .palleon-content-bar")
+                    .css("visibility", "visible");
+                selector.find("#palleon-canvas-loader").css("display", "flex");
+                var json = "";
+                json = dataJsonData;
+                loadJSON(json);
+                selector.find("#palleon-canvas-loader").hide();
+                setTimeout(function () {
+                    addToHistory(
+                        '<span class="material-icons">flag</span>' +
+                            palleonParams.started
+                    );
+                }, 100);
+                selector.find(".palleon-modal").hide();
             } catch (error) {
                 console.error("Error:", error);
             }
@@ -7270,26 +7218,34 @@
 
         function sendImageToServer(img, json) {
             const id = getParameterByName("templeteId");
-            const data = {
-                image: JSON.stringify(img),
-                json: JSON.stringify(json),
-                id: id,
-            };
+            let templeteFile;
+            convertToDataURL(json.backgroundImage.src, function (dataUrl) {
+                json.backgroundImage.src = dataUrl;
+                var json2 = JSON.stringify(json);
+                templeteFile = new Blob([json2], { type: "text/plain" });
+                var image = img;
+                const formdata = new FormData();
+                formdata.append("image", image);
+                formdata.append("json", templeteFile);
+                formdata.append("id", id);
 
-            const url = "http://localhost:3000/v1/canvas";
-            $.ajax({
-                type: "POST",
-                url: url,
-                data: data,
-                contentType: "application/json",
-                success: function (data) {
-                    console.log(data);
-                    toastr.success("Success!", "Image saved successfully");
-                },
-                error: function (error) {
-                    console.error("Error:", error);
-                    toastr.error("Error!", "Image not saved");
-                },
+                const url = "http://142.190.42.107:3000/v1/canvas";
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    data: formdata,
+                    success: function (data) {
+                        console.log(data);
+                        toastr.success("Success!", "Image saved successfully");
+                    },
+                    error: function (error) {
+                        console.error("Error:", error);
+                        toastr.error("Error!", "Image not saved");
+                    },
+                });
             });
         }
 
