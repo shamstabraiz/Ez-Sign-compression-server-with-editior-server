@@ -7154,6 +7154,12 @@
             initAligningGuidelines(canvas);
         });
 
+        //going back to aalure shine when clicked on back
+        selector.find("#palleon-back").on("click", function () {
+            window.location.href =
+                "https://vibesign-e3c2a.firebaseapp.com/#/pages/media";
+        });
+
         /* Init Aligning Guidelines */
         initAligningGuidelines(canvas);
 
@@ -7169,9 +7175,7 @@
 
         async function fetchData(id) {
             try {
-                let response = await fetch(
-                    "/data/templetes/" + id + ".json"
-                );
+                let response = await fetch("/data/templetes/" + id + ".json");
                 if (response.status === 404) {
                     return null;
                 }
@@ -7185,7 +7189,7 @@
             try {
                 const dataJsonData = await fetchData(id);
                 if (dataJsonData == null) return;
-                console.log(dataJsonData)
+                console.log(dataJsonData);
                 selector
                     .find("#palleon-canvas-wrap, .palleon-content-bar")
                     .css("visibility", "visible");
@@ -7217,6 +7221,8 @@
         }
 
         function sendImageToServer(img, json) {
+            //show loader
+            selector.find("#palleon-main-loader").css("display", "flex");
             const id = getParameterByName("templeteId");
             let templeteFile;
             convertToDataURL(json.backgroundImage.src, function (dataUrl) {
@@ -7238,10 +7244,11 @@
                     processData: false,
                     data: formdata,
                     success: function (data) {
-                        console.log(data);
+                        $("#palleon").find("#palleon-main-loader").hide();
                         toastr.success("Success!", "Image saved successfully");
                     },
                     error: function (error) {
+                        $("#palleon").find("#palleon-main-loader").hide();
                         console.error("Error:", error);
                         toastr.error("Error!", "Image not saved");
                     },
