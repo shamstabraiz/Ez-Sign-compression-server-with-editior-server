@@ -1618,7 +1618,7 @@
 
         /* Download Image */
         selector.find("#palleon-download").on("click", function () {
-            var name = getParameterByName("templeteId");
+            var name = getParameterByName("templateId");
             var quality = parseFloat(100);
             var format = "png";
             var link = document.createElement("a");
@@ -7168,14 +7168,14 @@
             adjustZoom();
         });
 
-        const id = getParameterByName("templeteId");
+        const id = getParameterByName("templateId");
         if (id === "") {
             toastr.error("Error!", "No id found");
         }
 
         async function fetchData(id) {
             try {
-                let response = await fetch("/data/templetes/" + id + ".json");
+                let response = await fetch("/data/templates/" + id + ".json");
                 if (response.status === 404) {
                     return null;
                 }
@@ -7223,16 +7223,16 @@
         function sendImageToServer(img, json) {
             //show loader
             selector.find("#palleon-main-loader").css("display", "flex");
-            const id = getParameterByName("templeteId");
-            let templeteFile;
+            const id = getParameterByName("templateId");
+            let templateFile;
             convertToDataURL(json.backgroundImage.src, function (dataUrl) {
                 json.backgroundImage.src = dataUrl;
                 var json2 = JSON.stringify(json);
-                templeteFile = new Blob([json2], { type: "text/plain" });
+                templateFile = new Blob([json2], { type: "text/plain" });
                 var image = img;
                 const formdata = new FormData();
                 formdata.append("image", image);
-                formdata.append("json", templeteFile);
+                formdata.append("json", templateFile);
                 formdata.append("id", id);
 
                 const url = "http://142.190.42.107:3000/v1/canvas";
