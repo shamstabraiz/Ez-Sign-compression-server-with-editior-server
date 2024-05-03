@@ -7157,7 +7157,7 @@
         //going back to aalure shine when clicked on back
         selector.find("#palleon-back").on("click", function () {
             window.location.href =
-                "https://vibesign-e3c2a.firebaseapp.com/#/pages/media";
+                "https://ezdisplay-1214b.firebaseapp.com/#/pages/media";
         });
 
         /* Init Aligning Guidelines */
@@ -7235,7 +7235,7 @@
                 formdata.append("json", templateFile);
                 formdata.append("id", id);
 
-                const url = "http://142.190.42.107:3000/v1/canvas";
+                const url = "http://208.86.19.174:3000/v1/canvas";
                 $.ajax({
                     type: "POST",
                     url: url,
